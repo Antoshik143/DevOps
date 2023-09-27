@@ -1,0 +1,42 @@
+---
+- name: "Configure Nginx and Firewall"
+  hosts: servers
+  become: true
+
+  tasks:
+    - name: "install nginx"
+      ansible.builtin.apt:
+        name: nginx
+        state: present
+
+    - name: "configure nginx"
+      ansible.builtin.copy:
+        src: nginx.conf
+        dest: /etc/nginx/nginx.conf
+        mode: 0644
+      notify:
+        - "restart nginx"
+
+    - name: "open firewalls ports"
+      community.general.ufw:
+        rule: allow
+        proto: tcp
+        port: "{{ item }}"
+      loop:
+        - 22
+        - 80
+        - 443
+      notify:
+        - "restart ufw"
+
+  handlers:
+    - name: "restart nginx"
+      ansible.builtin.systemd:
+        name: nginx
+        state: restarted
+
+    - name: "restart ufw"
+      ansible.builtin.systemd:
+        name: ufw
+        state: restarted
+

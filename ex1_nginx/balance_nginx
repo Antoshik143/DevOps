@@ -1,0 +1,25 @@
+http {
+	upstream app{
+		server 10.2.0.100 weight=5;
+		server 10.2.0.101 weight=3;
+		server 10.2.0.102 weight=1;
+	}
+
+
+	server {
+		listen 80;
+
+		server_name lalochka.com
+
+		location / {
+			include proxy_params;
+
+			proxy_pass http://app;
+
+			proxy_redirect off;
+          	proxy_http_version 1.1;
+          	proxy_set_header Upgrade $http_upgrade;
+          	proxy_set_header Connection "upgrade";
+		}
+	}
+}
